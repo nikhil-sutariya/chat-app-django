@@ -1,0 +1,8 @@
+venv
+*./pyc
+*/__pycache__
+*/*/__pycache__
+*/migrations/0*
+*.log
+db.sqlite3
+media/
