@@ -30,7 +30,6 @@ class RegisterPhoneSerializer(ModelSerializer):
         return User.objects.create_user(**validated_data)
     
     def to_representation(self, instance):
-        print(instance)
         request = self.context.get('request')
         refresh = RefreshToken.for_user(instance)
         login(request, instance)
