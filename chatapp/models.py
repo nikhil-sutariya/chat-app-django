@@ -6,6 +6,8 @@ import uuid
 class Conversation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     room_name = models.CharField(_('room name'), max_length=100)
+    private_key = models.TextField(null=True, blank=True)
+    public_key = models.TextField(null=True, blank=True)
 
     class Meta:
         db_table = "conversation"

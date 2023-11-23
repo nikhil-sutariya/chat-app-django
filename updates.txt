@@ -1,0 +1,109 @@
+=> Message encryption and decryption in chat app 
+-  Create and store the rsa private key for the conversation and map it to the conversation model.
+   When conversation starts the message will store the encrypted message using that private key
+   and decrypt the message with the public key of that pirvate key.
+
+Using RSA encryption for end-to-end encryption in your messaging system is a feasible approach. 
+RSA is a widely-used public key cryptography algorithm that provides a secure way for parties to encrypt and decrypt messages. 
+Here are the steps you can follow to implement RSA encryption in your Django project:
+1. **Generate RSA Keys:**
+   Generate RSA public and private keys for each conversation. You can do this using a library like `cryptography`:
+   ```bash
+   pip install cryptography
+   ```
+   Then, in your Django management command or a separate script, you can generate keys:
+   ```python
+   from cryptography.hazmat.primitives import serialization
+   from cryptography.hazmat.primitives.asymmetric import rsa
+   # Generate private key
+   private_key = rsa.generate_private_key(
+       public_exponent=65537,
+       key_size=2048,
+   )
+   # Serialize private key to PEM format
+   pem = private_key.private_bytes(
+       encoding=serialization.Encoding.PEM,
+       format=serialization.PrivateFormat.PKCS8,
+       encryption_algorithm=serialization.NoEncryption()
+   )
+   # Store the private key securely, for example in a model field for Conversation
+   conversation.private_key = pem.decode('utf-8')
+   conversation.save()
+   ```
+
+2. **Encrypt and Decrypt Messages:**
+   In your `receive` and `chat_message` methods in `ChatConsumer`, use the stored private key to encrypt and decrypt messages:
+   ```python
+   from cryptography.hazmat.primitives import hashes
+   from cryptography.hazmat.backends import default_backend
+   from cryptography.hazmat.primitives.asymmetric import padding
+   # To encrypt a message
+   cipher_text = public_key.encrypt(
+       message_content.encode('utf-8'),
+       padding.OAEP(
+           mgf=padding.MGF1(algorithm=hashes.SHA256()),
+           algorithm=hashes.SHA256(),
+           label=None
+       )
+   )
+   # To decrypt a message
+   plain_text = private_key.decrypt(
+       cipher_text,
+       padding.OAEP(
+           mgf=padding.MGF1(algorithm=hashes.SHA256()),
+           algorithm=hashes.SHA256(),
+           label=None
+       )
+   ).decode('utf-8')
+   ```
+   Ensure that you handle key management securely, and consider using a secure key storage mechanism. You may want to explore options like Django's `django-encrypted-fields` for securely storing private keys.
+3. **Key Rotation and Expiry (Optional):**
+   For enhanced security, you may consider rotating keys periodically and setting an expiration time on the keys.
+   Additionally, consider using a library like `cryptography` for handling RSA encryption and decryption securely. Always follow best practices for key management and encryption to ensure the security of your messaging system.
+
+For storing private keys securely, especially in the context of a Django application, you have a few options. Here are two approaches:
+### 1. Use Django's `django-encrypted-fields`:
+[`django-encrypted-fields`](https://pypi.org/project/django-encrypted-fields/) is a Django app that provides encrypted fields for models, which could be used to store sensitive data, such as private keys.
+Here's how you might use it:
+- Install the package:
+    ```bash
+    pip install django-encrypted-fields
+    ```
+- In your `models.py`, import the `EncryptedTextField` and use it for storing the private key:
+    ```python
+    from encrypted_fields import EncryptedTextField
+    class Conversation(models.Model):
+        # ... other fields
+        private_key = EncryptedTextField()
+    ```
+- Run migrations to apply the changes:
+    ```bash
+    python manage.py makemigrations
+    python manage.py migrate
+    ```
+This way, the private key will be stored in the database in an encrypted form.
+### 2. Use a Separate Key Management Service:
+For a more robust solution, consider using a separate key management service. Tools like [AWS Key Management Service (KMS)](https://aws.amazon.com/kms/) or [HashiCorp Vault](https://www.vaultproject.io/) are designed for secure key storage.
+Here's a high-level overview:
+- **AWS KMS:**
+  - Create a key in AWS KMS.
+  - Use AWS SDK to encrypt and decrypt data with this key.
+- **HashiCorp Vault:**
+  - Set up Vault and define policies for accessing keys.
+  - Use the Vault API to store and retrieve encrypted data.
+In both cases, your Django application would make requests to these services to get the private key when needed. This provides an extra layer of security as the keys are stored and managed by specialized services.
+Choose the solution that best fits your requirements and the overall architecture of your application. Always follow best practices for securing sensitive data and consider consulting with a security professional to ensure that your implementation aligns with security standards.
+
+PyPIPyPI
+django-encrypted-fields
+This is a collection of Django Model Field classes that are encrypted using Keyczar. (7 kB)
+https://pypi.org/project/django-encrypted-fields/
+
+
+Amazon Web Services, Inc.Amazon Web Services, Inc.
+Encryption Cryptography Signing - AWS Key Management Service - AWS
+Learn how AWS Key Management Service (KMS) provides you with logs of key usage to help you meet your regulatory and compliance needs.
+
+vaultproject.io
+Vault by HashiCorp
+Vault secures, stores, and tightly controls access to tokens, passwords, certificates, API keys, and other secrets in modern computing. Vault handles leasing, key revocation, key rolling, auditing, and provides secrets as a service through a unified API.
