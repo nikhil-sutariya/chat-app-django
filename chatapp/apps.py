@@ -5,5 +5,5 @@ class ChatappConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'chatapp'
 
-    # def ready(self):
-    #     from chatapp import signals
+    def ready(self):
+        from chatapp import signals

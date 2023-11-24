@@ -3,7 +3,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from chatapp.models import Conversation, Message 
 from channels.db import database_sync_to_async
 from users.models import User
-from app.global_helper import generate_key_pair, encrypt_message
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -54,21 +53,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def get_or_create_conversation(self, room_name):
         try:
             conversation, created = Conversation.objects.get_or_create(room_name=room_name)
-            if created:
-                keys = generate_key_pair()
-                conversation.public_key = keys['public_key']
-                conversation.private_key = keys['private_key'] 
-                conversation.save()
-            return 
+            return conversation
         except:
             return None
 
     @database_sync_to_async
     def create_message(self, data):
         try:
-            cipher_text = encrypt_message(data['message'], data['conversation'].public_key)
-            data['message'] = cipher_text
             message = Message.objects.create(conversation=data['conversation'], sender=data['sender'], receiver=data['receiver'], message=data['message'])
             return message
-        except:
+        except Exception as e:
+            print(e)
             return None

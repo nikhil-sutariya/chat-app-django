@@ -22,7 +22,7 @@ class Message(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sender')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='receiver')
-    message = models.TextField(_('message'))
+    message = models.CharField(_('message'), max_length=10000)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
