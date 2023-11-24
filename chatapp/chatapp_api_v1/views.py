@@ -44,7 +44,7 @@ class FetchConversationAPIView(GenericAPIView):
     def get(self, request):
         try:
             user = self.request.user
-            messages = Message.objects.filter(Q(sender=user) | Q(receiver=user))
+            messages = Message.objects.filter(Q(sender=user) | Q(receiver=user)).order_by('timestamp')
             serializer = self.serializer_class(messages, many=True, context={"request": request})
 
             response = {
@@ -55,7 +55,7 @@ class FetchConversationAPIView(GenericAPIView):
         
         except Exception as e:
             response = {
-                "success": True,
+                "success": False,
                 "message": chat_app_response.error_message,
                 "error_message": str(e),
                 "data": None

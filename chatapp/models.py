@@ -6,8 +6,8 @@ import uuid
 class Conversation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     room_name = models.CharField(_('room name'), max_length=100)
-    private_key = models.TextField(null=True, blank=True)
-    public_key = models.TextField(null=True, blank=True)
+    private_key = models.BinaryField(null=True, blank=True)
+    public_key = models.BinaryField(null=True, blank=True)
 
     class Meta:
         db_table = "conversation"
@@ -22,7 +22,7 @@ class Message(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sender')
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='receiver')
-    message = models.CharField(_('message'), max_length=10000)
+    message = models.BinaryField(_('message'), max_length=10000)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:

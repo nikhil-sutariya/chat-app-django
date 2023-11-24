@@ -34,21 +34,26 @@ def generate_key_pair():
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
     key_pair = {
-        "public_key": pem_public.decode('utf-8'),
-        "private_key": pem_private.decode('utf-8')
+        "public_key": pem_public,
+        "private_key": pem_private
     }
     return key_pair
 
 def encrypt_message(message, public_key):
     # Encrypt the message using the public key
-    print(public_key)
-    if type(public_key) == str:
-        public_key = serialization.load_pem_public_key(
-            public_key.encode('utf-8'),
-            backend=default_backend()
-        )
+    # public_key = public_key.decode('utf-8')
+    # if type(public_key) == str:
+        # public_key = serialization.load_pem_public_key(
+        #     public_key.encode('utf-8'),
+        #     backend=default_backend()
+        # )
+        
+    orginal_public_key = serialization.load_pem_public_key(
+        public_key,
+        backend=default_backend()
+    )
 
-    cipher_text = public_key.encrypt(
+    cipher_text = orginal_public_key.encrypt(
         message.encode('utf-8'),
         padding.OAEP(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
@@ -56,19 +61,24 @@ def encrypt_message(message, public_key):
             label=None
         )
     )
+    
     return cipher_text
 
 def decrypt_message(cipher_text, private_key):
-    print(private_key)
     # Decrypt the message using the private key
-    if type(private_key) == str:
-        private_key = serialization.load_pem_private_key(
-            private_key.encode('utf-8'),
-            password=None,
-            backend=default_backend()
-        )
+    # if type(private_key) == str:
+    #     private_key = serialization.load_pem_private_key(
+    #         private_key.encode('utf-8'),
+    #         password=None,
+    #         backend=default_backend()
+    #     )
+    orginal_private_key = serialization.load_pem_private_key(
+        private_key,
+        password=None,
+        backend=default_backend()
+    )
 
-    plain_text = private_key.decrypt(
+    plain_text = orginal_private_key.decrypt(
         cipher_text,
         padding.OAEP(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
