@@ -10,7 +10,7 @@ class User(AbstractUser):
     email = models.EmailField(_('email address'), unique= True, blank=True, null=True)
     phone = models.CharField(_('phone number'), max_length= 10, unique= True)
     profile_picture = models.ImageField(_('profile picture'), upload_to='profile_pictures', null=True, blank=True)
-    
+    bio = models.CharField(_('bio'), max_length=200, default="Hey there!, I'm using Fastchat")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

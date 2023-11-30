@@ -26,15 +26,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
         else:
             receiver_phone = room_name.split('-')[0]
         receiver = await self.get_user(receiver_phone)
-        conversation = await self.get_or_create_conversation(room_name)
+        
+        conversation_data = {
+            "room_name": room_name,
+            "sender": sender, 
+            "receiver": receiver
+        }
+        conversation = await self.get_or_create_conversation(conversation_data)
 
-        data = {
+        message_data = {
             "conversation": conversation, 
             "sender": sender, 
             "receiver": receiver, 
             "message": message
         }
-        await self.create_message(data)
+        await self.create_message(message_data)
         await self.channel_layer.group_send(self.room_group_name, {"type": "chat.message", "message": message})
 
     async def chat_message(self, event):
@@ -50,9 +56,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return None
         
     @database_sync_to_async
-    def get_or_create_conversation(self, room_name):
+    def get_or_create_conversation(self, data):
         try:
-            conversation, created = Conversation.objects.get_or_create(room_name=room_name)
+            conversation, created = Conversation.objects.get_or_create(room_name=data['room_name'], sender=data['sender'], receiver=data['receiver'])
             return conversation
         except:
             return None

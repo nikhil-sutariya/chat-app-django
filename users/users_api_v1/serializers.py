@@ -11,7 +11,7 @@ class UserSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name','last_name', 'phone', 'email', 'profile_picture', 'is_active']
+        fields = ['id', 'first_name','last_name', 'phone', 'email', 'profile_picture', 'bio', 'is_active']
 
 class RegisterPhoneSerializer(ModelSerializer):
     email = CharField(max_length=100, required=False)

@@ -78,7 +78,7 @@ class UserDetailsAPIView(RetrieveUpdateAPIView):
     
     def retrieve(self, request, *args, **kwargs):
         try:
-            serializer = self.serializer_class(request.user)
+            serializer = self.serializer_class(request.user, context={"request": request})
             response = {
                 "success": True,
                 "message": users_app_response.user_data,
@@ -100,7 +100,7 @@ class UserDetailsAPIView(RetrieveUpdateAPIView):
         try:
             user = request.user
             data = request.data
-            serializer = self.serializer_class(user, data=data, partial=True)
+            serializer = self.serializer_class(user, data=data, partial=True, context={"request": request})
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
