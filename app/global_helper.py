@@ -5,9 +5,24 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 
 def date_formatting(self):
+    stored_date = datetime.strptime(self.split('T')[0], '%Y-%m-%d').date()
+    current_date = datetime.now().date()
+    difference = current_date - stored_date
+
+    if difference.days == 0:
+        return 'Today'
+    elif difference.days == 1:
+        return 'Yesterday'
+    else:
+        return stored_date.strftime('%m/%d/%y')
+
+def date_formatting_month_year(self):
     # sample date format - October 19, 2023
     if 'T' in self:
         return datetime.strptime(self.split('T')[0], '%Y-%m-%d').strftime('%B %e, %Y')
+    
+def get_time(self):
+    return datetime.strptime(self, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%I:%M %p')
 
 def get_or_raise(model, obj_id, error_message):
     if obj_id:
