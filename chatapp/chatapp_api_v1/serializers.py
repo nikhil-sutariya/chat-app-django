@@ -6,7 +6,7 @@ from app.global_helper import date_formatting, decrypt_message
 class ConversationSerializer(ModelSerializer):
     class Meta:
         model = Conversation
-        fields = ['id', 'room_name']
+        fields = '__all__'
 
 class MessageSerializer(ModelSerializer):
     conversation = ConversationSerializer(many=False, read_only=True)

@@ -10,6 +10,7 @@ class Conversation(models.Model):
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recipient')
     private_key = models.BinaryField(null=True, blank=True)
     public_key = models.BinaryField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "conversation"

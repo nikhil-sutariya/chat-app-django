@@ -5,8 +5,8 @@ from rest_framework import status
 from users.models import User
 from users.users_api_v1.serializers import UserSerializer
 from django.db.models import Q
-from chatapp.chatapp_api_v1.serializers import MessageSerializer
-from chatapp.models import Message
+from chatapp.chatapp_api_v1.serializers import ConversationSerializer, MessageSerializer
+from chatapp.models import Conversation, Message
 from chatapp import response as chat_app_response
 
 class FetchUsersAPIView(GenericAPIView):
@@ -36,8 +36,35 @@ class FetchUsersAPIView(GenericAPIView):
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
         
         return Response(response, status=status.HTTP_200_OK)
-    
+
 class FetchConversationAPIView(GenericAPIView):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = ConversationSerializer
+
+    def get(self, request):
+        try:
+            user = self.request.user
+            conversations = Conversation.objects.filter(sender=user).order_by('timestamp')
+            serializer = self.serializer_class(conversations, many=True, context={"request": request})
+
+            response = {
+                "success": True,
+                "message": chat_app_response.chat_history,
+                "data": serializer.data
+            }
+        
+        except Exception as e:
+            response = {
+                "success": False,
+                "message": chat_app_response.error_message,
+                "error_message": str(e),
+                "data": None
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response(response, status=status.HTTP_200_OK)
+
+class FetchConversationMessagesAPIView(GenericAPIView):
     permission_classes = (IsAuthenticated, )
     serializer_class = MessageSerializer
 
