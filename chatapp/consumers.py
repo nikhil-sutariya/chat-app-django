@@ -4,7 +4,6 @@ from chatapp.models import Conversation, Message
 from channels.db import database_sync_to_async
 from users.models import User
 from chatapp.chatapp_api_v1.serializers import MessageSerializer
-from asgiref.sync import sync_to_async
 
 # websocket url
 # ws://127.0.0.1:8000/chat/9876543210-9876543212?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAzMzEyMjk5LCJpYXQiOjE3MDA3MjAyOTksImp0aSI6ImFhNGZhZDIxN2UzMTQ5ZDBiYWNhZjExZDEwZjc3YjFjIiwidXNlcl9pZCI6IjNmNWRiZTMwLWE3MDYtNGUyYi04ODRmLTNkMjI5MjU4YmVmNCJ9.d-fitmZak4sW7JtZ6JzAl5coP_zIAz_aJd-hEckP8Mk

@@ -8,8 +8,6 @@ class Conversation(models.Model):
     room_name = models.CharField(_('room name'), max_length=100)
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recipient')
-    private_key = models.BinaryField(null=True, blank=True)
-    public_key = models.BinaryField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
