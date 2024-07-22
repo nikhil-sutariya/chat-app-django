@@ -44,7 +44,7 @@ class FetchConversationAPIView(GenericAPIView):
     def get(self, request):
         try:
             user = self.request.user
-            conversations = Conversation.objects.filter(sender=user).order_by('timestamp')
+            conversations = Conversation.objects.filter(Q(sender=user) | Q(receiver=user)).order_by('timestamp')
             serializer = self.serializer_class(conversations, many=True, context={"request": request})
 
             response = {

@@ -6,13 +6,29 @@ from users.models import User
 from chatapp.chatapp_api_v1.serializers import MessageSerializer
 
 # websocket url
-# ws://127.0.0.1:8000/chat/9876543210-9876543212?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAzMzEyMjk5LCJpYXQiOjE3MDA3MjAyOTksImp0aSI6ImFhNGZhZDIxN2UzMTQ5ZDBiYWNhZjExZDEwZjc3YjFjIiwidXNlcl9pZCI6IjNmNWRiZTMwLWE3MDYtNGUyYi04ODRmLTNkMjI5MjU4YmVmNCJ9.d-fitmZak4sW7JtZ6JzAl5coP_zIAz_aJd-hEckP8Mk
+# ws://127.0.0.1:8000/chat/9408016008-9876543212?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUzMTYxNTQyLCJpYXQiOjE3MjE2MjU1NDIsImp0aSI6ImY5MTgwMzJkYTBhZjRlYTdiYTQ4MGRmN2E2ZjI1YTFkIiwidXNlcl9pZCI6IjM3Y2Q3NTJmLTQ1MjMtNDI1Yi1hMzQ0LTM1ODJkYzViNGQ4YSJ9.S-dpkulyqIdZDyHhqmgYq_Y0sAcm9qIMSSCKWmvHbUg
 
 class ChatConsumer(AsyncWebsocketConsumer):
+    async def get_room_name(self, sender_phone, receiver_phone):
+        phones = sorted([sender_phone, receiver_phone])
+        return "-".join(phones)
+    
+    async def check_room(self, event):
+        channel = event["channel"]
+        await self.send(channel, {'type': 'room_exists'})
+
     async def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+
+        sender_phone = self.room_name.split("-")[0]
+        receiver_phone = self.room_name.split("-")[1]
+    
+        self.room_name = await self.get_room_name(sender_phone, receiver_phone)
         self.room_group_name = f"chat_{self.room_name}"
 
+        # Check if room already exists
+        await self.channel_layer.group_send(self.room_name, {'type': 'check_room'})
+        
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
@@ -30,6 +46,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         else:
             receiver_phone = room_name.split('-')[0]
         receiver = await self.get_user(receiver_phone)
+
+        room_name = await self.get_room_name(sender.phone, receiver_phone)
         
         conversation_data = {
             "room_name": room_name,
@@ -63,7 +81,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_or_create_conversation(self, data):
         try:
-            conversation, created = Conversation.objects.get_or_create(room_name=data['room_name'], sender=data['sender'], receiver=data['receiver'])
+            room_name = data['room_name']
+            conversations = Conversation.objects.filter(room_name=room_name)
+
+            if conversations.exists():
+                conversation = conversations.first()
+
+            else:
+                conversation = Conversation(room_name=data['room_name'], sender=data['sender'], receiver=data['receiver'])
+                conversation.save()
+
             return conversation
         except:
             return None

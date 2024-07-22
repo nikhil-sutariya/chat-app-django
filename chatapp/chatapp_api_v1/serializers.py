@@ -14,8 +14,15 @@ class ConversationSerializer(ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         last_message = Message.objects.filter(conversation=instance).values('message').last()
-        if last_message:
-            data['last_massage'] = decrypt_message(last_message['message'], instance.receiver.private_key)
+        try:
+            if last_message:
+                data['last_massage'] = decrypt_message(last_message['message'], instance.sender.private_key)
+        except:
+            if last_message:
+                data['last_massage'] = decrypt_message(last_message['message'], instance.receiver.private_key)
+        finally:
+            data['last_massage'] = ""
+            
         data['timestamp'] = date_formatting(data['timestamp'])
         return data
 
